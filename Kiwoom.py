@@ -7,9 +7,7 @@ import pandas as pd
 import sqlite3
 import datetime
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from datetime import datetime
 
 TR_REQ_TIME_INTERVAL = 0.2
 
@@ -116,15 +114,16 @@ class Kiwoom(QAxWidget):
         
         #체결시간
         self.time =  self.get_comm_real_data(trcode, 20)
-        
+        self.time = self.time[:2] + ":" + self.time[2:4] + ":" + self.time[4:6]
                   
+
 
         # 현재가 
         self.price =  self.get_comm_real_data(trcode, 10)
         self.price = self.price[1:]
         
         
-        if self.price !="":
+        if self.price !="" and self.start_price != 0:
             self.price = float(self.price)
             
             
@@ -139,6 +138,7 @@ class Kiwoom(QAxWidget):
             
 
             self.strategy(self.price)
+
             
 
             
@@ -375,8 +375,10 @@ class Kiwoom(QAxWidget):
             if data > self.refer + self.pt:
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
                 
-                self.ui.textEdit.append("롱진입 | 진입지점 : " + str(self.refer + self.pt))
+                
+                self.ui.textEdit.append(str(self.time) + " 롱진입 | 진입지점 : " + str(self.refer + self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
                 self.first_data = self.refer + self.pt
                 self.state = "롱포지션"
 
@@ -385,8 +387,10 @@ class Kiwoom(QAxWidget):
             elif data < self.refer - self.pt:
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
                 
-                self.ui.textEdit.append("숏진입 | 진입지점 : " + str(self.refer - self.pt))
+                
+                self.ui.textEdit.append(str(self.time) + " 숏진입 | 진입지점 : " + str(self.refer - self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
                 self.first_data = self.refer - self.pt
                 self.state = "숏포지션"
 
@@ -396,26 +400,28 @@ class Kiwoom(QAxWidget):
             #강제청산
             if data <= self.first_data - 2*self.pt :
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
-                self.ui.textEdit.append("롱청산 | 청산지점 : " + str(self.first_data - 2*self.pt))
+                self.ui.textEdit.append(str(self.time) + " 롱청산 | 청산지점 : " + str(self.first_data - 2*self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
-                
+                self.ui.textEdit.append("                ")
                 self.refer = self.first_data - 2*self.pt
                 self.trade_count += 1
                 self.state = "초기상태"
 
 
             #2pt 도달 했는지 확인
-            elif data > self.first_data + 4*self.pt:
+            elif data > self.first_data + 4*self.pt and self.reach_peak == 0 :
                 self.sec_data = self.first_data + 4*self.pt
                 self.reach_peak = 1
-                self.ui.textEdit.append("2pt 도달(long) | 도달지점 : " + str(self.first_data + 4*self.pt))
+                self.ui.textEdit.append(str(self.time) + " 2pt 도달(long) | 도달지점 : " + str(self.first_data + 4*self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
             
             #롱 익절
             if data <= self.sec_data - 3*self.pt and self.reach_peak == 1 :
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
-                self.ui.textEdit.append("롱익절 | 익절지점 : " + str(self.sec_data - 3*self.pt))
+                self.ui.textEdit.append(str(self.time) + " 롱익절 | 익절지점 : " + str(self.sec_data - 3*self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
                 self.refer = self.sec_data - 3*self.pt 
                 self.trade_count += 1
                 self.reach_peak = 0
@@ -428,25 +434,28 @@ class Kiwoom(QAxWidget):
             if data >= self.first_data + 2*self.pt :
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
                  
-                self.ui.textEdit.append("숏청산 | 청산지점 : " + str(self.first_data + 2*self.pt))                
+                self.ui.textEdit.append(str(self.time) + " 숏청산 | 청산지점 : " + str(self.first_data + 2*self.pt))                
                 self.ui.textEdit.append("현재가 : " + str(data))                
+                self.ui.textEdit.append("                ")
                 self.refer = self.first_data + 2*self.pt
                 self.trade_count += 1
                 self.state = "초기상태"
                 
                 
             #2pt 도달 했는지 확인
-            elif data < self.first_data - 4*self.pt :
+            elif data < self.first_data - 4*self.pt and self.reach_peak == 0:
                 self.first_data = self.first_data - 4*self.pt
                 self.reach_peak = 1
-                self.ui.textEdit.append("2pt 도달(short) | 도달지점 : " + str(self.first_data - 4*self.pt))
+                self.ui.textEdit.append(str(self.time) + " 2pt 도달(short) | 도달지점 : " + str(self.first_data - 4*self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
             
             #숏 익절
-            if data <= self.sec_data + 3*self.pt and self.reach_peak == 1 :
+            if data >= self.sec_data + 3*self.pt and self.reach_peak == 1 :
                 self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
-                self.ui.textEdit.append("숏익절 | 익절지점 : " + str(self.sec_data + 3*self.pt))
+                self.ui.textEdit.append(str(self.time) + " 숏익절 | 익절지점 : " + str(self.sec_data + 3*self.pt))
                 self.ui.textEdit.append("현재가 : " + str(data))
+                self.ui.textEdit.append("                ")
                 self.refer = self.sec_data + 3*self.pt 
                 self.trade_count += 1
                 self.reach_peak = 0

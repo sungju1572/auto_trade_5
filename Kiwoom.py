@@ -22,6 +22,7 @@ class Kiwoom(QAxWidget):
         self.reach_peak = 0 #2pt 찍었는지 구별 여부 (1이면 찍은것)
         self.sec_data = 0 #두번쨰 데이터
         self.trade_count = 0 #거래 횟수
+        self.start_price = 0 #시가
 
         
     #COM오브젝트 생성
@@ -105,39 +106,42 @@ class Kiwoom(QAxWidget):
 
 ####
     #실시간 조회관련 핸들
-    def _handler_real_data(self, trcode, ret):
+    def _handler_real_data(self, trcode, ret, data):
         
         #ui에서 계좌랑 종목코드 가져오기
         self.account = self.ui.comboBox.currentText()
         self.code = self.ui.lineEdit.text()
     
-        
-        #체결시간
-        self.time =  self.get_comm_real_data(trcode, 20)
-        self.time = self.time[:2] + ":" + self.time[2:4] + ":" + self.time[4:6]
-                  
+        #print("ret:" , ret)
+        #print("data:", data)
 
-
-        # 현재가 
-        self.price =  self.get_comm_real_data(trcode, 10)
-        self.price = self.price[1:]
-        
-        
-        if self.price !="" and self.start_price != 0:
-            self.price = float(self.price)
+        if ret == "선물시세":
+            #체결시간
+            self.time =  self.get_comm_real_data(trcode, 20)
+            self.time = self.time[:2] + ":" + self.time[2:4] + ":" + self.time[4:6]
+                      
+    
+    
+            # 현재가 
+            self.price =  self.get_comm_real_data(trcode, 10)
+            self.price = self.price[1:]
             
             
-            
-            
-            
-            print(self.time)
-            print("|현재가: ", self.price)
-            print("|시가 : ", self.start_price)
-            print("|기준점 ", self.refer)
-            print("")
-            
-
-            self.strategy(self.price)
+            if self.price !="" and self.start_price != 0:
+                self.price = float(self.price)
+                
+                
+                
+                
+                
+                print(self.time)
+                print("|현재가: ", self.price)
+                print("|시가 : ", self.start_price)
+                print("|기준점 ", self.refer)
+                print("")
+                
+    
+                self.strategy(self.price)
 
             
 

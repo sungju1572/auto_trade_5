@@ -23,6 +23,8 @@ class Kiwoom(QAxWidget):
         self.sec_data = 0 #두번쨰 데이터
         self.trade_count = 0 #거래 횟수
         self.start_price = 0 #시가
+        self.dic = {} #종목별로 정보 저장할 dict
+        
 
         
     #COM오브젝트 생성
@@ -103,6 +105,27 @@ class Kiwoom(QAxWidget):
         self.dynamicCall("SendOrderFO(QString, QString, QString, QString, int, QString, QString, int, QString, QString)",
                          [rqname, screen_no, acc_no, code, order_type, slbytp, hoga, quantity, price, order_no])
 
+    #실시간 타입 구독신청
+    def SetRealReg(self, screen_no, code_list, fid_list, real_type):
+        self.dynamicCall("SetRealReg(QString, QString, QString, QString)", 
+                              screen_no, code_list, fid_list, real_type)
+        
+
+    def ready_trade(self, ticker, point):
+        name = self.get_master_code_name(ticker)
+        
+        self.dic[name + '_name'] = name #종목명
+        self.dic[name + '_ticker'] = ticker #종목 티커
+        self.dic[name + '_point'] = float(point) #종목 포인트 기준 (몇 단위로 거래 들어갈건지)
+        self.dic[name + '_status'] = '초기상태' #종목별 현재상태
+        self.dic[name + '_buy_count'] = 0 #거래 횟수 
+        self.dic[name + '_refer'] = 0 #기준점
+        self.dic[name + '_reach_peak'] = 0 #기준점에 도달했는지 여부 확인(0이면 미도달)
+        
+        
+        
+        self.ui.textEdit.append("거래준비완료 | 종목 : " + name)
+        
 
 ####
     #실시간 조회관련 핸들
@@ -121,29 +144,21 @@ class Kiwoom(QAxWidget):
             self.time = self.time[:2] + ":" + self.time[2:4] + ":" + self.time[4:6]
                       
     
-    
-            # 현재가 
-            self.price =  self.get_comm_real_data(trcode, 10)
-            self.price = self.price[1:]
+            open_price = self.get_comm_real_data(trcode, 16) #시가
+            price = self.get_comm_real_data(trcode, 10)       #현재가
+            name = self.get_master_code_name(trcode)          #이름
             
-            
-            if self.price !="" and self.start_price != 0:
-                self.price = float(self.price)
+          
+            if price !="" and open_price != 0:
+                price = float(price[1:])
+                open_price = float(open_price[1:])
                 
                 
+                self.dic[name + '_open_price'] = open_price  #dic에 시가 저장
+                self.dic[name + '_price'] = price   #dic에 현재가 저장
                 
-                
-                
-                print(self.time)
-                print("|현재가: ", self.price)
-                print("|시가 : ", self.start_price)
-                print("|기준점 ", self.refer)
-                print("")
-                
-    
-                self.strategy(self.price)
-
-            
+               
+                self.strategy(name)
 
             
 
@@ -258,57 +273,6 @@ class Kiwoom(QAxWidget):
 
 
         
-
-    
-
-
-    #opw박스 초기화 (주식)
-    def reset_opw00018_output(self):
-        self.opw00018_output = {'single': [], 'multi': []}
-
-    #여러 정보들 저장 (주식)
-    def _opw00018(self, rqname, trcode):
-        # single data
-        total_purchase_price = self._comm_get_data(trcode, "", rqname, 0, "총매입금액")
-        total_eval_price = self._comm_get_data(trcode, "", rqname, 0, "총평가금액")
-        total_eval_profit_loss_price = self._comm_get_data(trcode, "", rqname, 0, "총평가손익금액")
-        total_earning_rate = self._comm_get_data(trcode, "", rqname, 0, "총수익률(%)")
-        estimated_deposit = self._comm_get_data(trcode, "", rqname, 0, "추정예탁자산")
-
-        self.opw00018_output['single'].append(Kiwoom.change_format(total_purchase_price))
-        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_price))
-        self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_profit_loss_price))
-
-        total_earning_rate = Kiwoom.change_format(total_earning_rate)
-        
-
-        if self.get_server_gubun():
-            total_earning_rate = float(total_earning_rate) / 100
-            total_earning_rate = str(total_earning_rate)
-
-        self.opw00018_output['single'].append(total_earning_rate)
-
-        self.opw00018_output['single'].append(Kiwoom.change_format(estimated_deposit))
-
-        # multi data
-        rows = self._get_repeat_cnt(trcode, rqname)
-        for i in range(rows):
-            name = self._comm_get_data(trcode, "", rqname, i, "종목명")
-            quantity = self._comm_get_data(trcode, "", rqname, i, "보유수량")
-            purchase_price = self._comm_get_data(trcode, "", rqname, i, "매입가")
-            current_price = self._comm_get_data(trcode, "", rqname, i, "현재가")
-            eval_profit_loss_price = self._comm_get_data(trcode, "", rqname, i, "평가손익")
-            earning_rate = self._comm_get_data(trcode, "", rqname, i, "수익률(%)")
-
-            quantity = Kiwoom.change_format(quantity)
-            purchase_price = Kiwoom.change_format(purchase_price)
-            current_price = Kiwoom.change_format(current_price)
-            eval_profit_loss_price = Kiwoom.change_format(eval_profit_loss_price)
-            earning_rate = Kiwoom.change_format2(earning_rate)
-
-            self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
-                                                  earning_rate])
-
     #opw박스 초기화(선물)
     def reset_opw20006_output(self):
         self.opw20006_output = {'single': [], 'multi': []}
@@ -363,40 +327,60 @@ class Kiwoom(QAxWidget):
          
         
     #전략
-    def strategy(self, present_price):
+    def strategy(self, name):
+        try:
+            list_1 = [k for k in self.dic.keys() if name in k ]
+            
+            name = self.dic[list_1[list_1.index(name + '_name')]]                #종목 이름
+            ticker = self.dic[list_1[list_1.index(name + '_ticker')]]            #종목 티커
+            point = self.dic[list_1[list_1.index(name + '_point')]]              #종목 포인트 기준
+            status = self.dic[list_1[list_1.index(name + '_status')]]            #현재 상태
+            buy_count = self.dic[list_1[list_1.index(name + '_buy_count')]]      #거래 횟수
+            open_price = self.dic[list_1[list_1.index(name + '_open_price')]]    #시가
+            price = self.dic[list_1[list_1.inde(name + '_price')]]               #현재가
+            refer = self.dic[list_1[list_1.inde(name + '_refer')]]               #기준점
+            reach_peak = self.dic[list_1[list_1.inde(name + '_reach_peak')]]     #기준점 도달 확인
+            
+            
+            #초기상태
+            if status =="초기상태":
+                #long
+                if price > open_price + point:
+                    self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
+                    self.ui.textEdit.append(str(self.time) + " 롱진입 | 진입지점 : " + str(open_price + point))
+                    self.ui.textEdit.append("현재가 : " + str(price))
+                    self.ui.textEdit.append("                ")
+                    self.state = "롱포지션"
+                    self.dic[list_1[list_1.index(name+'_refer')]] = open_price + point
+                #short    
+                elif price < open_price - point:
+                    self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
+                    self.ui.textEdit.append(str(self.time) + " 숏진입 | 진입지점 : " + str(open_price - point))
+                    self.ui.textEdit.append("현재가 : " + str(price))
+                    self.ui.textEdit.append("                ")
+                    self.state = "숏포지션"
+                    self.dic[list_1[list_1.index(name+'_refer')]] = open_price - point
+                    
+            #매수상태
+            elif status =="롱포지션":
+                #강제청산
+                if price <= refer - 2*point:
+                    self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
+                    self.ui.textEdit.append(str(self.time) + " 롱청산 | 청산지점 : " + str(refer - 2*point))
+                    self.ui.textEdit.append("현재가 : " + str(price))
+                    self.ui.textEdit.append("                ")
+                    self.dic[list_1[list_1.index(name+'_refer')]] = refer - 2*point
+                    self.dic[list_1[list_1.index(name+'_buy_count')]] += 1 
+            
+                    
+                    
+        
+
+        
+        except Exception as e:    # 예외 처리 (모든예외 일괄 처리)
+            print('예외 발생 : ', e)
        
-        data = present_price
         
-        self.ui.textEdit_2.append("현재가 : " + str(self.price))   
-        self.ui.textEdit_2.append("거래횟수 : " + str(self.trade_count))   
-        self.ui.textEdit_2.append("기준점 : " + str(self.refer))   
-        self.ui.textEdit_2.append("-----------------" )   
-                
-        
-        #초기 상태
-        if self.state == "초기상태":
-            #long
-            if data > self.refer + self.pt:
-                self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
-                
-                
-                self.ui.textEdit.append(str(self.time) + " 롱진입 | 진입지점 : " + str(self.refer + self.pt))
-                self.ui.textEdit.append("현재가 : " + str(data))
-                self.ui.textEdit.append("                ")
-                self.first_data = self.refer + self.pt
-                self.state = "롱포지션"
-
-
-            #short
-            elif data < self.refer - self.pt:
-                self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
-                
-                
-                self.ui.textEdit.append(str(self.time) + " 숏진입 | 진입지점 : " + str(self.refer - self.pt))
-                self.ui.textEdit.append("현재가 : " + str(data))
-                self.ui.textEdit.append("                ")
-                self.first_data = self.refer - self.pt
-                self.state = "숏포지션"
 
                 
         #매수 포지션      

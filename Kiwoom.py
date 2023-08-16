@@ -358,7 +358,7 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱진입 | 진입지점 : " + str(open_price + point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.state = "롱포지션"
+                    self.dic[list_1[list_1.index(name + '_status')]]  = "롱포지션"
                     self.dic[list_1[list_1.index(name+'_refer')]] = open_price + point
                 #short    
                 elif price < open_price - point:
@@ -366,7 +366,7 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏진입 | 진입지점 : " + str(open_price - point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.state = "숏포지션"
+                    self.dic[list_1[list_1.index(name + '_status')]]  = "숏포지션"
                     self.dic[list_1[list_1.index(name+'_refer')]] = open_price - point
                     
             #매수상태
@@ -390,12 +390,12 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append("                ")
                 
                 #롱 익절
-                if price <= sec_data - 3*point and reach_peak == 1 :
+                if price <= sec_data - point and reach_peak == 1 :
                     self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "1", "3", 1, "0", "")
-                    self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱익절 | 익절지점 : " + str(sec_data - 3*point))
+                    self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱익절 | 익절지점 : " + str(sec_data - point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.dic[list_1[list_1.index(name+'_refer')]] = sec_data - 3*point
+                    self.dic[list_1[list_1.index(name+'_refer')]] = sec_data - point
                     self.dic[list_1[list_1.index(name+'_buy_count')]] += 1
                     self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
                     self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
@@ -421,12 +421,12 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append("                ")
                 
                 #숏 익절
-                if price >= sec_data + 3*point and reach_peak == 1 :
+                if price >= sec_data + point and reach_peak == 1 :
                     self.send_order_fo("send_order_fo_req", "0101", self.account, self.code, 1, "2", "3", 1, "0", "")
-                    self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏익절 | 익절지점 : " + str(sec_data + 3*point))
+                    self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏익절 | 익절지점 : " + str(sec_data + point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.dic[list_1[list_1.index(name+'_refer')]] = sec_data + 3*point
+                    self.dic[list_1[list_1.index(name+'_refer')]] = sec_data + point
                     self.dic[list_1[list_1.index(name+'_buy_count')]] += 1
                     self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
                     self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
@@ -438,7 +438,7 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱진입 | 진입지점 : " + str(refer + point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.state = "롱포지션"
+                    self.dic[list_1[list_1.index(name + '_status')]]  = "롱포지션"
                     self.dic[list_1[list_1.index(name+'_refer')]] = refer + point
                 #short    
                 elif price < refer - point:
@@ -446,7 +446,7 @@ class Kiwoom(QAxWidget):
                     self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏진입 | 진입지점 : " + str(refer - point))
                     self.ui.textEdit.append("현재가 : " + str(price))
                     self.ui.textEdit.append("                ")
-                    self.state = "숏포지션"
+                    self.dic[list_1[list_1.index(name + '_status')]]  = "숏포지션"
                     self.dic[list_1[list_1.index(name+'_refer')]] = refer - point
                     
                     

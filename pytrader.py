@@ -33,10 +33,13 @@ class MyWindow(QMainWindow, form_class):
         accounts_list = accounts.split(';')[0:accouns_num]
         self.comboBox.addItems(accounts_list)
 
-        self.lineEdit.textChanged.connect(self.code_changed)
+        #self.lineEdit.textChanged.connect(self.code_changed)
 
         self.pushButton_4.clicked.connect(self.check_balance_2)
         self.pushButton_7.clicked.connect(self.trade_start)
+        
+        
+        self.gudoc_status = 0 #구독 상태 (0이면 구독된 종목개수 0개)
 
         
 
@@ -47,7 +50,8 @@ class MyWindow(QMainWindow, form_class):
         code = self.lineEdit.text()
         name = self.kiwoom.get_master_code_name(code)
         self.lineEdit_2.setText(name)
-        
+
+    
     #계좌설정
     def set_account(self):
         account = self.comboBox.currentText()
@@ -124,12 +128,45 @@ class MyWindow(QMainWindow, form_class):
 
         self.tableWidget_2.resizeRowsToContents()
         
+    #구독 개수 상태에따라 종목 구독
+    def set_gudoc(self, code):
+        if self.gudoc_status == 0 :
+            self.kiwoom.SetRealReg(1000 , code, "20;10", "0")
+            self.gudoc_status = 1
+        elif self.gudoc_status == 1 :
+            self.kiwoom.SetRealReg(1000 , code, "20;10", "1")
         
+        self.textEdit.append("구독성공 : " + code)
+        
+        
+    
         
     def trade_start(self):
         print("--대기중--")
-        self.trade_set = True
-        code = self.lineEdit.text()
+        
+        #코스피 200 선물 구독
+        if self.checkBox_2.isChecked():
+            point = self.lineEdit_3.text()
+            code = "101T9000"
+            self.kiwoom.ready_trade(code, point)
+            self.set_gudoc(code)
+
+        
+        if self.checkBox_3.isChecked():
+            point = self.lineEdit_4.text()
+            code = "105T9000"
+            self.kiwoom.ready_trade(code, point)
+            self.set_gudoc(code)
+            
+        
+        if self.checkBox_4.isChecked():
+            point = self.lineEdit_5.text()
+            code = "175T8000"
+            self.kiwoom.ready_trade(code, point)            
+            self.set_gudoc(code)
+        
+        
+        
         self.kiwoom.set_input_value("종목코드", code)
         self.kiwoom.comm_rq_data("opt50003_req", "opt50003", 0, "1000")
 

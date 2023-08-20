@@ -33,7 +33,8 @@ class MyWindow(QMainWindow, form_class):
         accounts_list = accounts.split(';')[0:accouns_num]
         self.comboBox.addItems(accounts_list)
 
-        #self.lineEdit.textChanged.connect(self.code_changed)
+        self.lineEdit_6.textChanged.connect(self.code_changed)
+        self.lineEdit_9.textChanged.connect(self.code_changed_2)
 
         self.pushButton_4.clicked.connect(self.check_balance_2)
         self.pushButton_7.clicked.connect(self.trade_start)
@@ -47,9 +48,15 @@ class MyWindow(QMainWindow, form_class):
         
 
     def code_changed(self):
-        code = self.lineEdit.text()
+        code = self.lineEdit_6.text()
         name = self.kiwoom.get_master_code_name(code)
         self.lineEdit_2.setText(name)
+        
+        
+    def code_changed_2(self):
+        code = self.lineEdit_9.text()
+        name = self.kiwoom.get_master_code_name(code)
+        self.lineEdit_5.setText(name) 
 
     
     #계좌설정
@@ -147,28 +154,23 @@ class MyWindow(QMainWindow, form_class):
         #코스피 200 선물 구독
         if self.checkBox_2.isChecked():
             point = self.lineEdit_3.text()
-            code = "101T9000"
+            code = self.lineEdit_6.text()
             self.kiwoom.ready_trade(code, point)
             self.set_gudoc(code)
 
         
         if self.checkBox_3.isChecked():
             point = self.lineEdit_4.text()
-            code = "105T9000"
+            code = self.lineEdit_9.text()
             self.kiwoom.ready_trade(code, point)
             self.set_gudoc(code)
             
         
-        if self.checkBox_4.isChecked():
-            point = self.lineEdit_5.text()
-            code = "175T8000"
-            self.kiwoom.ready_trade(code, point)            
-            self.set_gudoc(code)
+    
         
         
-        
-        self.kiwoom.set_input_value("종목코드", code)
-        self.kiwoom.comm_rq_data("opt50003_req", "opt50003", 0, "1000")
+        #self.kiwoom.set_input_value("종목코드", code)
+        #self.kiwoom.comm_rq_data("opt50003_req", "opt50003", 0, "1000")
 
 
         

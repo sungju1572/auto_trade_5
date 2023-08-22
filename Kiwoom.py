@@ -376,7 +376,7 @@ class Kiwoom(QAxWidget):
                 #매수상태
                 elif status =="롱포지션":
                     #강제청산
-                    if price <= refer - 2*point:
+                    if price < refer - 2*point:
                         self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱청산 | 청산지점 : " + str(refer - 2*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
@@ -394,7 +394,7 @@ class Kiwoom(QAxWidget):
                         self.ui.textEdit.append("                ")
                     
                     #롱 익절
-                    if price <= sec_data - point and reach_peak == 1 :
+                    if price < sec_data - point and reach_peak == 1 :
                         self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱익절 | 익절지점 : " + str(sec_data - point))
                         self.ui.textEdit.append("현재가 : " + str(price))
@@ -407,7 +407,7 @@ class Kiwoom(QAxWidget):
                 #매도상태
                 elif status =="숏포지션":
                     #강제청산
-                    if price >= refer + 2*point:
+                    if price > refer + 2*point:
                         self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏청산 | 청산지점 : " + str(refer + 2*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
@@ -425,7 +425,7 @@ class Kiwoom(QAxWidget):
                         self.ui.textEdit.append("                ")
                     
                     #숏 익절
-                    if price >= sec_data + point and reach_peak == 1 :
+                    if price > sec_data + point and reach_peak == 1 :
                         self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏익절 | 익절지점 : " + str(sec_data + point))
                         self.ui.textEdit.append("현재가 : " + str(price))

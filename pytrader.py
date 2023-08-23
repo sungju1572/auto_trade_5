@@ -155,14 +155,16 @@ class MyWindow(QMainWindow, form_class):
         if self.checkBox_2.isChecked():
             point = self.lineEdit_3.text()
             code = self.lineEdit_6.text()
-            self.kiwoom.ready_trade(code, point)
+            quantity = self.lineEdit_7.text()
+            self.kiwoom.ready_trade(code, point, quantity)
             self.set_gudoc(code)
 
         
         if self.checkBox_3.isChecked():
             point = self.lineEdit_4.text()
             code = self.lineEdit_9.text()
-            self.kiwoom.ready_trade(code, point)
+            quantity = self.lineEdit_8.text()
+            self.kiwoom.ready_trade(code, point, quantity)
             self.set_gudoc(code)
             
         

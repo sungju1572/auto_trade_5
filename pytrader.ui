@@ -268,7 +268,7 @@
      <rect>
       <x>40</x>
       <y>90</y>
-      <width>361</width>
+      <width>391</width>
       <height>271</height>
      </rect>
     </property>
@@ -280,7 +280,7 @@
       <rect>
        <x>30</x>
        <y>140</y>
-       <width>301</width>
+       <width>331</width>
        <height>101</height>
       </rect>
      </property>
@@ -323,7 +323,7 @@
      <widget class="QCheckBox" name="checkBox_3">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>290</x>
         <y>50</y>
         <width>21</width>
         <height>21</height>
@@ -349,13 +349,36 @@
        <bool>true</bool>
       </property>
      </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>30</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>거래수량</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_8">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>50</y>
+        <width>41</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="geometry">
       <rect>
        <x>30</x>
        <y>20</y>
-       <width>301</width>
+       <width>331</width>
        <height>101</height>
       </rect>
      </property>
@@ -398,7 +421,7 @@
      <widget class="QCheckBox" name="checkBox_2">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>290</x>
         <y>40</y>
         <width>21</width>
         <height>21</height>
@@ -422,6 +445,29 @@
       </property>
       <property name="readOnly">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>20</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>거래수량</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_7">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>40</y>
+        <width>41</width>
+        <height>20</height>
+       </rect>
       </property>
      </widget>
     </widget>

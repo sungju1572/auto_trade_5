@@ -111,12 +111,13 @@ class Kiwoom(QAxWidget):
                               screen_no, code_list, fid_list, real_type)
         
 
-    def ready_trade(self, ticker, point):
+    def ready_trade(self, ticker, point, quantity):
         name = self.get_master_code_name(ticker)
         
         self.dic[name + '_name'] = name #종목명
         self.dic[name + '_ticker'] = ticker #종목 티커
         self.dic[name + '_point'] = float(point) #종목 포인트 기준 (몇 단위로 거래 들어갈건지)
+        self.dic[name + '_quantity'] = int(quantity) #거래 수량
         self.dic[name + '_status'] = '초기상태' #종목별 현재상태
         self.dic[name + '_buy_count'] = 0 #거래 횟수 
         self.dic[name + '_refer'] = 0 #기준점
@@ -336,6 +337,7 @@ class Kiwoom(QAxWidget):
             name = self.dic[list_1[list_1.index(name + '_name')]]                #종목 이름
             ticker = self.dic[list_1[list_1.index(name + '_ticker')]]            #종목 티커
             point = self.dic[list_1[list_1.index(name + '_point')]]              #종목 포인트 기준
+            quantity = self.dic[list_1[list_1.index(name + '_quantity')]]        #거래수량
             status = self.dic[list_1[list_1.index(name + '_status')]]            #현재 상태
             buy_count = self.dic[list_1[list_1.index(name + '_buy_count')]]      #거래 횟수
             open_price = self.dic[list_1[list_1.index(name + '_open_price')]]    #시가
@@ -351,6 +353,8 @@ class Kiwoom(QAxWidget):
             self.ui.textEdit_2.append("기준점 : " + str(refer))   
             self.ui.textEdit_2.append("-----------------" )   
             
+
+            
             #거래횟수 3번 이하일때 거래진행
             if buy_count <= 3 :
                 
@@ -358,7 +362,7 @@ class Kiwoom(QAxWidget):
                 if status =="초기상태":
                     #long
                     if price > open_price + point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱진입 | 진입지점 : " + str(open_price + point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
@@ -366,7 +370,7 @@ class Kiwoom(QAxWidget):
                         self.dic[list_1[list_1.index(name+'_refer')]] = open_price + point
                     #short    
                     elif price < open_price - point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏진입 | 진입지점 : " + str(open_price - point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
@@ -377,7 +381,7 @@ class Kiwoom(QAxWidget):
                 elif status =="롱포지션":
                     #강제청산
                     if price < refer - 2*point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱청산 | 청산지점 : " + str(refer - 2*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
@@ -392,23 +396,33 @@ class Kiwoom(QAxWidget):
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(long) | 도달지점 : " + str(refer + 4*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
-                    
-                    #롱 익절
-                    if price < sec_data - point and reach_peak == 1 :
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
-                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱익절 | 익절지점 : " + str(sec_data - point))
-                        self.ui.textEdit.append("현재가 : " + str(price))
-                        self.ui.textEdit.append("                ")
-                        self.dic[list_1[list_1.index(name+'_refer')]] = sec_data - point
-                        self.dic[list_1[list_1.index(name+'_buy_count')]] += 1
-                        self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
-                        self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
+                        
+                    if reach_peak == 1 :
+                        #롱 익절
+                        if price < sec_data - point :
+                            self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", quantity, "0", "")
+                            self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱익절 | 익절지점 : " + str(sec_data - point))
+                            self.ui.textEdit.append("현재가 : " + str(price))
+                            self.ui.textEdit.append("                ")
+                            self.dic[list_1[list_1.index(name+'_refer')]] = sec_data - point
+                            
+                            self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
+                            self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
+                        
+                        #0.5p 도달할때마다 기준점 갱신
+                        elif price >= sec_data + point :
+                            self.dic[list_1[list_1.index(name+'_sec_data')]] = sec_data + point
+                            self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱 기준점 갱신 : " + str(sec_data + point))
+                            self.ui.textEdit.append("현재가 : " + str(price))
+                            self.ui.textEdit.append("                ")
+                            
+
                 
                 #매도상태
                 elif status =="숏포지션":
                     #강제청산
                     if price > refer + 2*point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏청산 | 청산지점 : " + str(refer + 2*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
@@ -423,22 +437,33 @@ class Kiwoom(QAxWidget):
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(short) | 도달지점 : " + str(refer - 4*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
+                        
+                        
+                    if reach_peak == 1 :
+                        #숏 익절
+                        if price > sec_data + point :
+                            self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", quantity, "0", "")
+                            self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏익절 | 익절지점 : " + str(sec_data + point))
+                            self.ui.textEdit.append("현재가 : " + str(price))
+                            self.ui.textEdit.append("                ")
+                            self.dic[list_1[list_1.index(name+'_refer')]] = sec_data + point
+                            
+                            self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
+                            self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
+                        
+                        #0.5p 도달할때마다 기준점 갱신
+                        elif price <= sec_data - point :
+                            self.dic[list_1[list_1.index(name+'_sec_data')]] = sec_data + point
+                            self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏 기준점 갱신 : " + str(sec_data - point))
+                            self.ui.textEdit.append("현재가 : " + str(price))
+                            self.ui.textEdit.append("                ")
                     
-                    #숏 익절
-                    if price > sec_data + point and reach_peak == 1 :
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
-                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏익절 | 익절지점 : " + str(sec_data + point))
-                        self.ui.textEdit.append("현재가 : " + str(price))
-                        self.ui.textEdit.append("                ")
-                        self.dic[list_1[list_1.index(name+'_refer')]] = sec_data + point
-                        self.dic[list_1[list_1.index(name+'_buy_count')]] += 1
-                        self.dic[list_1[list_1.index(name+'_reach_peak')]] = 0
-                        self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
+
                         
                 elif status == "초기상태2":
                     #long
                     if price > refer + point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "2", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 롱진입 | 진입지점 : " + str(refer + point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
@@ -446,7 +471,7 @@ class Kiwoom(QAxWidget):
                         self.dic[list_1[list_1.index(name+'_refer')]] = refer + point
                     #short    
                     elif price < refer - point:
-                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", 1, "0", "")
+                        self.send_order_fo("send_order_fo_req", "0101", self.account, ticker, 1, "1", "3", quantity, "0", "")
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 숏진입 | 진입지점 : " + str(refer - point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")

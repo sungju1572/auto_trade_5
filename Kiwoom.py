@@ -136,10 +136,6 @@ class Kiwoom(QAxWidget):
         
         #ui에서 계좌랑 종목코드 가져오기
         self.account = self.ui.comboBox.currentText()
-        #self.code = self.ui.lineEdit.text()
-    
-        #print("ret:" , ret)
-        #print("data:", data)
 
         if ret == "선물시세":
             #체결시간
@@ -350,7 +346,7 @@ class Kiwoom(QAxWidget):
             self.ui.textEdit_2.append("종목 : " + str(name))  
             self.ui.textEdit_2.append("현재가 : " + str(price))   
             self.ui.textEdit_2.append("거래횟수 : " + str(buy_count))   
-            self.ui.textEdit_2.append("기준점 : " + str(refer))   
+            self.ui.textEdit_2.append("기준점 : " + str(sec_data))   
             self.ui.textEdit_2.append("-----------------" )   
             
 
@@ -390,10 +386,10 @@ class Kiwoom(QAxWidget):
                         self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
                     
                     #2pt 도달 했는지 확인
-                    elif price > refer + 4*point and reach_peak == 0 :
+                    elif price > refer + 3*point and reach_peak == 0 :
                         self.dic[list_1[list_1.index(name+'_sec_data')]] = refer + 4*point
                         self.dic[list_1[list_1.index(name+'_reach_peak')]] = 1
-                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(long) | 도달지점 : " + str(refer + 4*point))
+                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(long) | 도달지점 : " + str(refer + 3*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
                         
@@ -431,10 +427,10 @@ class Kiwoom(QAxWidget):
                         self.dic[list_1[list_1.index(name+'_status')]] = "초기상태2"
                     
                     #2pt 도달 했는지 확인
-                    elif price < refer - 4*point and reach_peak == 0 :
+                    elif price < refer - 3*point and reach_peak == 0 :
                         self.dic[list_1[list_1.index(name+'_sec_data')]] = refer - 4*point
                         self.dic[list_1[list_1.index(name+'_reach_peak')]] = 1
-                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(short) | 도달지점 : " + str(refer - 4*point))
+                        self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(short) | 도달지점 : " + str(refer - 3*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
                         self.ui.textEdit.append("                ")
                         

@@ -387,7 +387,7 @@ class Kiwoom(QAxWidget):
                     
                     #2pt 도달 했는지 확인
                     elif price > refer + 3*point and reach_peak == 0 :
-                        self.dic[list_1[list_1.index(name+'_sec_data')]] = refer + 4*point
+                        self.dic[list_1[list_1.index(name+'_sec_data')]] = refer + 3*point
                         self.dic[list_1[list_1.index(name+'_reach_peak')]] = 1
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(long) | 도달지점 : " + str(refer + 3*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
@@ -428,7 +428,7 @@ class Kiwoom(QAxWidget):
                     
                     #2pt 도달 했는지 확인
                     elif price < refer - 3*point and reach_peak == 0 :
-                        self.dic[list_1[list_1.index(name+'_sec_data')]] = refer - 4*point
+                        self.dic[list_1[list_1.index(name+'_sec_data')]] = refer - 3*point
                         self.dic[list_1[list_1.index(name+'_reach_peak')]] = 1
                         self.ui.textEdit.append(str(self.time) + " | " + str(name) + " 2pt 도달(short) | 도달지점 : " + str(refer - 3*point))
                         self.ui.textEdit.append("현재가 : " + str(price))
